@@ -40,7 +40,11 @@ func initAllPosts(cfg *config) error {
 	if err != nil {
 		return err
 	}
-	return savePosts(posts)
+	err = savePosts(posts)
+	if err != nil {
+		return err
+	}
+	return saveMetadata()
 }
 
 func run(args []string) error {

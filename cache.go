@@ -65,7 +65,7 @@ func readPosts() ([]*postDetail, error) {
 	}
 	posts := make([]*postDetail, 0)
 	for _, f := range files {
-		if f.IsDir() {
+		if shouldSkip(f) {
 			continue
 		}
 		path := filepath.Join(cacheDir, f.Name())
@@ -76,6 +76,10 @@ func readPosts() ([]*postDetail, error) {
 		posts = append(posts, post)
 	}
 	return posts, nil
+}
+
+func shouldSkip(f os.FileInfo) bool {
+	return f.IsDir() || f.Name() == metadataFile
 }
 
 func readPost(path string) (*postDetail, error) {
