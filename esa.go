@@ -14,7 +14,6 @@ type postDetail struct {
 	FullName       string    `json:"full_name"`
 	Wip            bool      `json:"wip"`
 	BodyMd         string    `json:"body_md"`
-	BodyHTML       string    `json:"body_html"`
 	CreatedAt      time.Time `json:"created_at"`
 	Message        string    `json:"message"`
 	URL            string    `json:"url"`
