@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type postResponse struct {
+type postDetail struct {
 	Number         int       `json:"number"`
 	Name           string    `json:"name"`
 	FullName       string    `json:"full_name"`
@@ -34,20 +34,24 @@ type postResponse struct {
 	} `json:"updated_by"`
 }
 
+func (p *postDetail) print() {
+	fmt.Println(p.Number, p.Name, p.CreatedAt)
+}
+
 type postsResponse struct {
-	Posts      []postResponse `json:"posts"`
-	PrevPage   int            `json:"prev_page"`
-	NextPage   int            `json:"next_page"`
-	TotalCount int            `json:"total_count"`
-	Page       int            `json:"page"`
-	PerPage    int            `json:"per_page"`
-	MaxPerPage int            `json:"max_per_page"`
+	Posts      []*postDetail `json:"posts"`
+	PrevPage   int           `json:"prev_page"`
+	NextPage   int           `json:"next_page"`
+	TotalCount int           `json:"total_count"`
+	Page       int           `json:"page"`
+	PerPage    int           `json:"per_page"`
+	MaxPerPage int           `json:"max_per_page"`
 }
 
 func (r *postsResponse) print() {
 	fmt.Println(r.PrevPage, r.NextPage, r.TotalCount, r.Page, r.PerPage, r.MaxPerPage)
 	for _, p := range r.Posts {
-		fmt.Println(p.Number, p.Name, p.CreatedAt)
+		p.print()
 	}
 }
 
@@ -58,7 +62,7 @@ func buildGetPostsURL(page int, team, token string) string {
 	return base + "?" + query
 }
 
-func getPosts(page int, team, token string) (*postsResponse, error) {
+func fetchPosts(page int, team, token string) (*postsResponse, error) {
 	url := buildGetPostsURL(page, team, token)
 	res, err := http.Get(url)
 	if err != nil {
@@ -80,17 +84,19 @@ func getPosts(page int, team, token string) (*postsResponse, error) {
 	return &posts, nil
 }
 
-func getAllPosts(cfg *config) error {
+func fetchAllPosts(cfg *config) ([]*postDetail, error) {
+	posts := make([]*postDetail, 0)
 	page := 1
 	for {
-		postsRes, err := getPosts(page, cfg.Team, cfg.Token)
+		postsRes, err := fetchPosts(page, cfg.Team, cfg.Token)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		posts = append(posts, postsRes.Posts...)
 		if postsRes.NextPage == 0 {
 			break
 		}
 		page = postsRes.NextPage
 	}
-	return nil
+	return posts, nil
 }
