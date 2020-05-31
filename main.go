@@ -35,16 +35,20 @@ func readConfig() (*config, error) {
 	return &cfg, err
 }
 
+func initAllPosts(cfg *config) error {
+	posts, err := fetchAllPosts(cfg)
+	if err != nil {
+		return err
+	}
+	return savePosts(posts)
+}
+
 func run(args []string) error {
 	cfg, err := readConfig()
 	if err != nil {
 		return err
 	}
-	posts, err := fetchAllPosts(cfg)
-	if err != nil {
-		return err
-	}
-	savePosts(posts)
+	_ = cfg
 
 	return nil
 }
