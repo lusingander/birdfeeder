@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	perPage = 50
+)
+
 type postDetail struct {
 	Number         int       `json:"number"`
 	Name           string    `json:"name"`
@@ -55,7 +59,6 @@ func (r *postsResponse) print() {
 }
 
 func buildGetPostsURL(page int, team, token string) string {
-	perPage := 50
 	base := fmt.Sprintf("https://api.esa.io/v1/teams/%s/posts", team)
 	query := fmt.Sprintf("page=%d&per_page=%d&sort=created&order=asc&access_token=%s", page, perPage, token)
 	return base + "?" + query
