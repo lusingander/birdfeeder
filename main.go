@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,21 +35,17 @@ func readConfig() (*config, error) {
 	return &cfg, err
 }
 
-func getCacheDirPath() (string, error) {
-	cache, err := os.UserCacheDir()
-	if err != nil {
-		return "", err
-	}
-	path := filepath.Join(cache, application)
-	return path, nil
-}
-
 func run(args []string) error {
 	cfg, err := readConfig()
 	if err != nil {
 		return err
 	}
-	fmt.Println(cfg)
+	posts, err := fetchAllPosts(cfg)
+	if err != nil {
+		return err
+	}
+	savePosts(posts)
+
 	return nil
 }
 
