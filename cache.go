@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -54,5 +55,40 @@ func savePost(post *postDetail, cacheDir string) error {
 }
 
 func readPosts() ([]*postDetail, error) {
-	return nil, nil
+	cacheDir, err := getCacheDirPath()
+	if err != nil {
+		return nil, err
+	}
+	files, err := ioutil.ReadDir(cacheDir)
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]*postDetail, 0)
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+		path := filepath.Join(cacheDir, f.Name())
+		post, err := readPost(path)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
+func readPost(path string) (*postDetail, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var post postDetail
+	err = json.NewDecoder(f).Decode(&post)
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
 }
