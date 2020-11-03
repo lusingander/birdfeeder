@@ -6,7 +6,9 @@ import (
 	"github.com/lusingander/birdfeeder/internal/domain"
 )
 
-func NewPostRepository() domain.PostRepository
+func NewPostRepository() domain.PostRepository {
+	return &postRepository{}
+}
 
 type postRepository struct{}
 
