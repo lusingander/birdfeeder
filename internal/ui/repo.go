@@ -8,5 +8,5 @@ import (
 var postRepository domain.PostRepository
 
 func initRepositories() {
-	postRepository = infra.PostRepositoryImpl{}
+	postRepository = infra.NewPostRepository()
 }

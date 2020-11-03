@@ -6,9 +6,11 @@ import (
 	"github.com/lusingander/birdfeeder/internal/domain"
 )
 
-type PostRepositoryImpl struct{}
+func NewPostRepository() domain.PostRepository
 
-func (PostRepositoryImpl) ReadAllPosts() ([]*domain.Post, error) {
+type postRepository struct{}
+
+func (postRepository) ReadAllPosts() ([]*domain.Post, error) {
 	posts, err := readPosts()
 	if err != nil {
 		return nil, err
