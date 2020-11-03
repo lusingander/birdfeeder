@@ -1,60 +1,20 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"os"
-	"path/filepath"
+
+	"github.com/lusingander/birdfeeder/internal/infra"
+	"github.com/lusingander/birdfeeder/internal/ui"
 )
-
-const (
-	application = "birdfeeder"
-	configFile  = "config.json"
-)
-
-type config struct {
-	Team  string
-	Token string
-}
-
-func readConfig() (*config, error) {
-	conf, err := os.UserConfigDir()
-	if err != nil {
-		return nil, err
-	}
-
-	path := filepath.Join(conf, application, configFile)
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	var cfg config
-	err = json.NewDecoder(f).Decode(&cfg)
-	return &cfg, err
-}
-
-func initAllPosts(cfg *config) error {
-	posts, err := fetchAllPosts(cfg)
-	if err != nil {
-		return err
-	}
-	err = savePosts(posts)
-	if err != nil {
-		return err
-	}
-	return saveMetadata()
-}
 
 func run(args []string) error {
-	cfg, err := readConfig()
+	cfg, err := infra.ReadConfig()
 	if err != nil {
 		return err
 	}
 	_ = cfg
-
-	return nil
+	return ui.Start()
 }
 
 func main() {

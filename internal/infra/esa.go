@@ -1,4 +1,4 @@
-package main
+package infra
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/lusingander/birdfeeder/internal/domain"
 )
 
 const (
@@ -86,7 +88,7 @@ func fetchPosts(page int, team, token string) (*postsResponse, error) {
 	return &posts, nil
 }
 
-func fetchAllPosts(cfg *config) ([]*postDetail, error) {
+func fetchAllPosts(cfg *domain.Config) ([]*postDetail, error) {
 	posts := make([]*postDetail, 0)
 	page := 1
 	for {
@@ -101,4 +103,16 @@ func fetchAllPosts(cfg *config) ([]*postDetail, error) {
 		page = postsRes.NextPage
 	}
 	return posts, nil
+}
+
+func initAllPosts(cfg *domain.Config) error {
+	posts, err := fetchAllPosts(cfg)
+	if err != nil {
+		return err
+	}
+	err = savePosts(posts)
+	if err != nil {
+		return err
+	}
+	return saveMetadata()
 }
