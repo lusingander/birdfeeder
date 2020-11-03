@@ -1,6 +1,10 @@
 package infra
 
-import "github.com/lusingander/birdfeeder/internal/domain"
+import (
+	"strings"
+
+	"github.com/lusingander/birdfeeder/internal/domain"
+)
 
 type PostRepositoryImpl struct{}
 
@@ -17,12 +21,17 @@ func (PostRepositoryImpl) ReadAllPosts() ([]*domain.Post, error) {
 }
 
 func toPost(p *postDetail) *domain.Post {
+	categories := parseCategories(p.Category)
 	return &domain.Post{
-		Number:   p.Number,
-		Title:    p.Name,
-		Body:     p.BodyMd,
-		Wip:      p.Wip,
-		Category: p.Category,
-		Tags:     p.Tags,
+		Number:     p.Number,
+		Title:      p.Name,
+		Body:       p.BodyMd,
+		Wip:        p.Wip,
+		Categories: categories,
+		Tags:       p.Tags,
 	}
+}
+
+func parseCategories(category string) []string {
+	return strings.Split(category, "/")
 }

@@ -5,10 +5,10 @@ type PostRepository interface {
 }
 
 type Post struct {
-	Number   int
-	Title    string
-	Body     string
-	Wip      bool
-	Category string
-	Tags     []string
+	Number     int
+	Title      string
+	Body       string
+	Wip        bool
+	Categories []string
+	Tags       []string
 }

@@ -3,11 +3,13 @@ package ui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/lusingander/birdfeeder/internal/domain"
+	"github.com/lusingander/birdfeeder/internal/ui/tree"
+	"github.com/lusingander/birdfeeder/internal/util"
 )
 
 type model struct {
-	posts []*domain.Post
-	err   error
+	tree tree.Model
+	err  error
 }
 
 func (model) Init() tea.Cmd {
@@ -33,7 +35,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case initPostsMsg:
-		m.posts = msg
+		m.tree = tree.New(msg)
 		return m, nil
 	case errorMsg:
 		m.err = msg
@@ -43,20 +45,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	buf := newBufferWrapper()
+	buf := util.NewBufferWrapper()
 	m.internalView(buf)
 	return buf.String()
 }
 
-func (m model) internalView(buf *bufferWrapper) {
-	buf.writeln("- BIRDFEEDER -")
+func (m model) internalView(buf *util.BufferWrapper) {
+	buf.Writeln("- BIRDFEEDER -")
 	if m.err != nil {
-		buf.writeln(m.err.Error())
+		buf.Writeln(m.err.Error())
 		return
 	}
-	for _, post := range m.posts {
-		buf.writeln("[%d] %s", post.Number, post.Title)
-	}
+	buf.Writeln(m.tree.View())
 }
 
 // Start UI
