@@ -96,6 +96,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.viewport.SetContent(m.viewTree())
 			}
 			return m, nil
+		case "f":
+			// should reconsider..
+			m.viewport.ViewDown()
+			m.cursor = m.viewport.YOffset
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
+		case "b":
+			// should reconsider..
+			m.viewport.ViewUp()
+			m.cursor = m.viewport.YOffset
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
 		case "g":
 			if m.cursor > 0 {
 				m.cursor = 0
@@ -118,7 +130,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.viewport.Width = msg.Width
 		m.viewport.Height = msg.Height - 2 // header + footer
 	}
-	m.viewport, _ = viewport.Update(msg, m.viewport)
 	return m, nil
 }
 
