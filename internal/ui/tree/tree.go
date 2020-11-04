@@ -96,6 +96,20 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.viewport.SetContent(m.viewTree())
 			}
 			return m, nil
+		case "g":
+			if m.cursor > 0 {
+				m.cursor = 0
+				m.viewport.GotoTop()
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
+		case "G":
+			if m.cursor < len(m.root.children)-1 {
+				m.cursor = len(m.root.children) - 1
+				m.viewport.GotoBottom()
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
 		}
 	case InitMsg:
 		m.root = buildRoot(msg)
