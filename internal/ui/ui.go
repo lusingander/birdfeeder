@@ -35,12 +35,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case initPostsMsg:
-		m.tree = tree.New(msg)
-		return m, nil
+		return m.Update(tree.InitMsg(msg))
 	case errorMsg:
 		m.err = msg
 		return m, nil
 	}
+	m.tree, _ = m.tree.Update(msg)
 	return m, nil
 }
 
@@ -51,19 +51,31 @@ func (m model) View() string {
 }
 
 func (m model) internalView(buf *util.BufferWrapper) {
-	buf.Writeln("- BIRDFEEDER -")
+	m.viewHeader(buf)
 	if m.err != nil {
 		buf.Writeln(m.err.Error())
 		return
 	}
-	buf.Writeln(m.tree.View())
+	buf.Write(m.tree.View())
+	m.viewFooter(buf)
+}
+
+func (model) viewHeader(buf *util.BufferWrapper) {
+	buf.Writeln("- birdfeeder -")
+}
+
+func (model) viewFooter(buf *util.BufferWrapper) {
+	buf.Write("")
 }
 
 // Start UI
 func Start() error {
 	initRepositories()
 
-	p := tea.NewProgram(model{})
+	m := model{}
+	m.tree = tree.New()
+
+	p := tea.NewProgram(m)
 	p.EnterAltScreen()
 	defer p.ExitAltScreen()
 

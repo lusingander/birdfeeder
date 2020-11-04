@@ -1,6 +1,9 @@
 package tree
 
 import (
+	"sort"
+
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/lusingander/birdfeeder/internal/domain"
 	"github.com/lusingander/birdfeeder/internal/util"
@@ -12,22 +15,18 @@ type node struct {
 	children []*node
 }
 
-type Model struct {
-	posts []*domain.Post
-	root  *node
-}
-
-func New(posts []*domain.Post) Model {
+func buildRoot(posts []*domain.Post) *node {
 	root := &node{
 		children: []*node{},
 	}
 	for _, post := range posts {
 		add(post, post.Categories, root)
 	}
-	return Model{
-		posts: posts,
-		root:  root,
+	sorter := func(i, j int) bool {
+		return root.children[i].name < root.children[j].name
 	}
+	sort.Slice(root.children, sorter)
+	return root
 }
 
 func add(post *domain.Post, categories []string, target *node) {
@@ -54,11 +53,35 @@ func add(post *domain.Post, categories []string, target *node) {
 	add(post, categories[1:], newNode)
 }
 
-func (Model) Init() tea.Cmd {
+type Model struct {
+	posts []*domain.Post
+	root  *node
+
+	viewport viewport.Model
+}
+
+func New() Model {
+	return Model{
+		viewport: viewport.Model{},
+	}
+}
+
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+type InitMsg []*domain.Post
+
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case InitMsg:
+		m.root = buildRoot(msg)
+		m.viewport.SetContent(m.viewTree())
+	case tea.WindowSizeMsg:
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height - 2 // header + footer
+	}
+	m.viewport, _ = viewport.Update(msg, m.viewport)
 	return m, nil
 }
 
@@ -69,10 +92,16 @@ func (m Model) View() string {
 }
 
 func (m Model) internalView(buf *util.BufferWrapper) {
+	buf.Writeln(viewport.View(m.viewport))
+}
+
+func (m Model) viewTree() string {
 	if m.root == nil {
-		return
+		return ""
 	}
+	buf := util.NewBufferWrapper()
 	for _, node := range m.root.children {
 		buf.Writeln("%s (%d)", node.name, len(node.children))
 	}
+	return buf.String()
 }
