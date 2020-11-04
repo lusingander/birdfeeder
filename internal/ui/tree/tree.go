@@ -58,6 +58,8 @@ type Model struct {
 	root  *node
 
 	viewport viewport.Model
+
+	cursor int
 }
 
 func New() Model {
@@ -74,6 +76,27 @@ type InitMsg []*domain.Post
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "j":
+			if m.cursor < len(m.root.children)-1 {
+				m.cursor++
+				if m.viewport.YOffset+m.viewport.Height < m.cursor+1 {
+					m.viewport.LineDown(1)
+				}
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
+		case "k":
+			if m.cursor > 0 {
+				m.cursor--
+				if m.viewport.YOffset > m.cursor {
+					m.viewport.LineUp(1)
+				}
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
+		}
 	case InitMsg:
 		m.root = buildRoot(msg)
 		m.viewport.SetContent(m.viewTree())
@@ -100,7 +123,12 @@ func (m Model) viewTree() string {
 		return ""
 	}
 	buf := util.NewBufferWrapper()
-	for _, node := range m.root.children {
+	for i, node := range m.root.children {
+		if i == m.cursor {
+			buf.Write("> ")
+		} else {
+			buf.Write("  ")
+		}
 		buf.Writeln("%s (%d)", node.name, len(node.children))
 	}
 	return buf.String()
