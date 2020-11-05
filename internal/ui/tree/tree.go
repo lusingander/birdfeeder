@@ -59,13 +59,31 @@ type Model struct {
 
 	viewport viewport.Model
 
-	cursor int
+	cursor    int
+	current   *node
+	histories []*history
 }
 
 func New() Model {
 	return Model{
 		viewport: viewport.Model{},
 	}
+}
+
+type history struct {
+	cursor int
+	*node
+}
+
+func (m *Model) createHistory() {
+	h := &history{m.cursor, m.current}
+	m.histories = append(m.histories, h)
+}
+
+func (m *Model) goBackHistory() *history {
+	h := m.histories[len(m.histories)-1]
+	m.histories = m.histories[:len(m.histories)-1]
+	return h
 }
 
 func (m Model) Init() tea.Cmd {
@@ -79,7 +97,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
-			if m.cursor < len(m.root.children)-1 {
+			if m.cursor < len(m.current.children)-1 {
 				m.cursor++
 				if m.viewport.YOffset+m.viewport.Height < m.cursor+1 {
 					m.viewport.LineDown(1)
@@ -116,15 +134,34 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			return m, nil
 		case "G":
-			if m.cursor < len(m.root.children)-1 {
-				m.cursor = len(m.root.children) - 1
+			if m.cursor < len(m.current.children)-1 {
+				m.cursor = len(m.current.children) - 1
 				m.viewport.GotoBottom()
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
+		case "l":
+			target := m.current.children[m.cursor]
+			if len(target.children) > 0 {
+				m.createHistory()
+				m.current = target
+				m.cursor = 0
+				m.viewport.GotoTop()
+				m.viewport.SetContent(m.viewTree())
+			}
+			return m, nil
+		case "h":
+			if len(m.histories) > 0 {
+				h := m.goBackHistory()
+				m.current = h.node
+				m.cursor = h.cursor
 				m.viewport.SetContent(m.viewTree())
 			}
 			return m, nil
 		}
 	case InitMsg:
 		m.root = buildRoot(msg)
+		m.current = m.root
 		m.viewport.SetContent(m.viewTree())
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
@@ -144,11 +181,11 @@ func (m Model) internalView(buf *util.BufferWrapper) {
 }
 
 func (m Model) viewTree() string {
-	if m.root == nil {
+	if m.current == nil {
 		return ""
 	}
 	buf := util.NewBufferWrapper()
-	for i, node := range m.root.children {
+	for i, node := range m.current.children {
 		if i == m.cursor {
 			buf.Write("> ")
 		} else {
