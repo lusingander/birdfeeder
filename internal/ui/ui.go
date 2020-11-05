@@ -73,7 +73,7 @@ func (m model) viewHeader(buf *util.BufferWrapper) {
 }
 
 func (m model) viewBreadcrumb(buf *util.BufferWrapper) {
-	buf.Write(" BIRDFEEDER")
+	buf.Write("BIRDFEEDER")
 	m.tree.ViewBreadcrumb(buf)
 	buf.Writeln("")
 }
