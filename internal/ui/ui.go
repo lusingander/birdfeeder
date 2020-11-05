@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/lusingander/birdfeeder/internal/domain"
 	"github.com/lusingander/birdfeeder/internal/ui/tree"
@@ -8,6 +10,8 @@ import (
 )
 
 type model struct {
+	width, height int
+
 	tree tree.Model
 	err  error
 }
@@ -36,6 +40,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case initPostsMsg:
 		return m.Update(tree.InitMsg(msg))
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	case errorMsg:
 		m.err = msg
 		return m, nil
@@ -60,8 +67,19 @@ func (m model) internalView(buf *util.BufferWrapper) {
 	m.viewFooter(buf)
 }
 
-func (model) viewHeader(buf *util.BufferWrapper) {
-	buf.Writeln("- birdfeeder -")
+func (m model) viewHeader(buf *util.BufferWrapper) {
+	m.viewBreadcrumb(buf)
+	m.viewHorizontalSeparator(buf)
+}
+
+func (m model) viewBreadcrumb(buf *util.BufferWrapper) {
+	buf.Write(" BIRDFEEDER")
+	m.tree.ViewBreadcrumb(buf)
+	buf.Writeln("")
+}
+
+func (m model) viewHorizontalSeparator(buf *util.BufferWrapper) {
+	buf.Writeln(strings.Repeat("-", m.width))
 }
 
 func (model) viewFooter(buf *util.BufferWrapper) {

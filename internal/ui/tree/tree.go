@@ -165,7 +165,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.viewport.SetContent(m.viewTree())
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height - 2 // header + footer
+		m.viewport.Height = msg.Height - 3 // header + footer
 	}
 	return m, nil
 }
@@ -191,7 +191,21 @@ func (m Model) viewTree() string {
 		} else {
 			buf.Write("  ")
 		}
-		buf.Writeln("%s (%d)", node.name, len(node.children))
+		if node.post != nil {
+			buf.Writeln("%s", node.name)
+		} else {
+			buf.Writeln("%s (%d)", node.name, len(node.children))
+		}
 	}
 	return buf.String()
+}
+
+func (m Model) ViewBreadcrumb(buf *util.BufferWrapper) {
+	buf.Write(" > POSTS")
+	if len(m.histories) > 0 {
+		for _, h := range m.histories[1:] {
+			buf.Write(" > %s", h.name)
+		}
+		buf.Write(" > %s", m.current.name)
+	}
 }
