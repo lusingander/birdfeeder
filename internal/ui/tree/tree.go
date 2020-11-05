@@ -158,6 +158,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				m.viewport.SetContent(m.viewTree())
 			}
 			return m, nil
+		case "H":
+			m.cursor = m.viewport.YOffset
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
+		case "M":
+			m.cursor = m.viewport.YOffset + (m.viewport.Height / 2)
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
+		case "L":
+			m.cursor = m.viewport.YOffset + m.viewport.Height - 1
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
 		}
 	case InitMsg:
 		m.root = buildRoot(msg)
