@@ -22,10 +22,7 @@ func buildRoot(posts []*domain.Post) *node {
 	for _, post := range posts {
 		add(post, post.Categories, root)
 	}
-	sorter := func(i, j int) bool {
-		return root.children[i].name < root.children[j].name
-	}
-	sort.Slice(root.children, sorter)
+	root.sortNodesRecursive(byNameAsc)
 	return root
 }
 
@@ -51,6 +48,30 @@ func add(post *domain.Post, categories []string, target *node) {
 	}
 	target.children = append(target.children, newNode)
 	add(post, categories[1:], newNode)
+}
+
+type sortKey int
+
+const (
+	byNameAsc sortKey = iota
+	byNameDesc
+)
+
+func (n *node) sortNodesRecursive(key sortKey) {
+	createSorter := func(nodes []*node) func(int, int) bool {
+		switch key {
+		case byNameAsc:
+			return func(i, j int) bool { return nodes[i].name < nodes[j].name }
+		case byNameDesc:
+			return func(i, j int) bool { return nodes[i].name > nodes[j].name }
+		default:
+			panic("Invalid key type")
+		}
+	}
+	sort.Slice(n.children, createSorter(n.children))
+	for _, child := range n.children {
+		child.sortNodesRecursive(key)
+	}
 }
 
 type Model struct {
