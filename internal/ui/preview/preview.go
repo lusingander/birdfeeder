@@ -22,9 +22,7 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-type InitMsg struct {
-	tree.Model
-}
+type InitMsg tree.Model
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -35,8 +33,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		}
 	case InitMsg:
-		m.base = msg.Model
-		m.post = msg.Model.CurrentPost()
+		m.base = tree.Model(msg)
+		m.post = m.base.CurrentPost()
 	}
 	return m, nil
 }

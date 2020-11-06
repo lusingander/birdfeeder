@@ -64,7 +64,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.tree.OpenPost {
 			m.tree.OpenPost = false
 			m.currentState = statePreview
-			return m.Update(preview.InitMsg{Model: m.tree})
+			return m.Update(preview.InitMsg(m.tree))
 		}
 	case statePreview:
 		m.preview, _ = m.preview.Update(msg)
