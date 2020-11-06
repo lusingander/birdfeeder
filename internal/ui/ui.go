@@ -5,16 +5,26 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/lusingander/birdfeeder/internal/domain"
+	"github.com/lusingander/birdfeeder/internal/ui/preview"
 	"github.com/lusingander/birdfeeder/internal/ui/tree"
 	"github.com/lusingander/birdfeeder/internal/util"
 )
 
 type model struct {
 	width, height int
+	currentState  state
 
-	tree tree.Model
-	err  error
+	tree    tree.Model
+	preview preview.Model
+	err     error
 }
+
+type state int
+
+const (
+	stateTree state = iota
+	statePreview
+)
 
 func (model) Init() tea.Cmd {
 	return readPosts
@@ -35,7 +45,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
 		}
 	case initPostsMsg:
@@ -47,7 +57,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err = msg
 		return m, nil
 	}
-	m.tree, _ = m.tree.Update(msg)
+
+	switch m.currentState {
+	case stateTree:
+		m.tree, _ = m.tree.Update(msg)
+		if m.tree.OpenPost {
+			m.tree.OpenPost = false
+			m.currentState = statePreview
+			return m.Update(preview.InitMsg{Model: m.tree})
+		}
+	case statePreview:
+		m.preview, _ = m.preview.Update(msg)
+		if m.preview.Close {
+			m.preview.Close = false
+			m.currentState = stateTree
+			return m.Update(tree.ClosePreview(struct{}{}))
+		}
+	}
+
 	return m, nil
 }
 
@@ -63,7 +90,12 @@ func (m model) internalView(buf *util.BufferWrapper) {
 		buf.Writeln(m.err.Error())
 		return
 	}
-	buf.Write(m.tree.View())
+	switch m.currentState {
+	case stateTree:
+		buf.Write(m.tree.View())
+	case statePreview:
+		buf.Write(m.preview.View())
+	}
 	m.viewFooter(buf)
 }
 
@@ -74,7 +106,12 @@ func (m model) viewHeader(buf *util.BufferWrapper) {
 
 func (m model) viewBreadcrumb(buf *util.BufferWrapper) {
 	buf.Write("BIRDFEEDER")
-	m.tree.ViewBreadcrumb(buf)
+	switch m.currentState {
+	case stateTree:
+		m.tree.ViewBreadcrumb(buf)
+	case statePreview:
+		m.preview.ViewBreadcrumb(buf)
+	}
 	buf.Writeln("")
 }
 
@@ -90,8 +127,11 @@ func (model) viewFooter(buf *util.BufferWrapper) {
 func Start() error {
 	initRepositories()
 
-	m := model{}
+	m := model{
+		currentState: stateTree,
+	}
 	m.tree = tree.New()
+	m.preview = preview.New()
 
 	p := tea.NewProgram(m)
 	p.EnterAltScreen()

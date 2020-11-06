@@ -83,12 +83,18 @@ type Model struct {
 	cursor    int
 	current   *node
 	histories []*history
+
+	OpenPost bool
 }
 
 func New() Model {
 	return Model{
 		viewport: viewport.Model{},
 	}
+}
+
+func (m Model) CurrentPost() *domain.Post {
+	return m.current.post
 }
 
 type history struct {
@@ -112,6 +118,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 type InitMsg []*domain.Post
+type ClosePreview struct{}
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -163,6 +170,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		case "l":
 			target := m.current.children[m.cursor]
+			if target.post != nil {
+				m.createHistory()
+				m.current = target
+				m.OpenPost = true
+				return m, nil
+			}
 			if len(target.children) > 0 {
 				m.createHistory()
 				m.current = target
@@ -195,6 +208,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case InitMsg:
 		m.root = buildRoot(msg)
 		m.current = m.root
+		m.viewport.SetContent(m.viewTree())
+	case ClosePreview:
+		h := m.goBackHistory()
+		m.current = h.node
 		m.viewport.SetContent(m.viewTree())
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
