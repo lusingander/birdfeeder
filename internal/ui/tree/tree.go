@@ -66,7 +66,13 @@ type sortKey int
 const (
 	byNameAsc sortKey = iota
 	byNameDesc
+	byPostsCountAsc
+	byPostsCountDesc
 )
+
+func (k sortKey) next() sortKey {
+	return (k + 1) % 4
+}
 
 func (n *node) sortNodesRecursive(key sortKey) {
 	createSorter := func(nodes []*node) func(int, int) bool {
@@ -75,6 +81,10 @@ func (n *node) sortNodesRecursive(key sortKey) {
 			return func(i, j int) bool { return nodes[i].name < nodes[j].name }
 		case byNameDesc:
 			return func(i, j int) bool { return nodes[i].name > nodes[j].name }
+		case byPostsCountAsc:
+			return func(i, j int) bool { return nodes[i].postCount() < nodes[j].postCount() }
+		case byPostsCountDesc:
+			return func(i, j int) bool { return nodes[i].postCount() > nodes[j].postCount() }
 		default:
 			panic("Invalid key type")
 		}
@@ -94,6 +104,7 @@ type Model struct {
 	cursor    int
 	current   *node
 	histories []*history
+	sortKey
 
 	OpenPost bool
 }
@@ -101,6 +112,7 @@ type Model struct {
 func New() Model {
 	return Model{
 		viewport: viewport.Model{},
+		sortKey:  byNameAsc,
 	}
 }
 
@@ -213,6 +225,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		case "L":
 			m.cursor = m.viewport.YOffset + m.viewport.Height - 1
+			m.viewport.SetContent(m.viewTree())
+			return m, nil
+		case "s":
+			m.sortKey = m.sortKey.next()
+			m.root.sortNodesRecursive(m.sortKey)
 			m.viewport.SetContent(m.viewTree())
 			return m, nil
 		}
