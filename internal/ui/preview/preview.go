@@ -41,6 +41,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case InitMsg:
 		m.base = tree.Model(msg)
 		m.post = m.base.CurrentPost()
+		m.viewport.GotoTop()
 		m.viewport.SetContent(m.viewMarkdown())
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
