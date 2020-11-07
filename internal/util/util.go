@@ -3,6 +3,8 @@ package util
 import (
 	"bytes"
 	"fmt"
+
+	"github.com/muesli/termenv"
 )
 
 type BufferWrapper struct {
@@ -19,4 +21,8 @@ func (b *BufferWrapper) Write(s string, a ...interface{}) {
 
 func (b *BufferWrapper) Writeln(s string, a ...interface{}) {
 	b.WriteString(fmt.Sprintf(s+"\n", a...))
+}
+
+func Faint(s string) string {
+	return termenv.String(s).Faint().String()
 }

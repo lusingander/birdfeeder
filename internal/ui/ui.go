@@ -122,8 +122,15 @@ func (m model) viewHorizontalSeparator(buf *util.BufferWrapper) {
 	buf.Writeln(strings.Repeat("─", m.width))
 }
 
-func (model) viewFooter(buf *util.BufferWrapper) {
-	buf.Write("")
+func (m model) viewFooter(buf *util.BufferWrapper) {
+	switch m.currentState {
+	case stateTree:
+		m.tree.ViewFooter(buf)
+	case statePreview:
+		m.preview.ViewFooter(buf)
+	default:
+		buf.Write("")
+	}
 }
 
 // Start UI

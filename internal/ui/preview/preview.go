@@ -91,3 +91,7 @@ func (m Model) viewMarkdown() string {
 func (m Model) ViewBreadcrumb(buf *util.BufferWrapper) {
 	m.base.ViewBreadcrumb(buf)
 }
+
+func (m Model) ViewFooter(buf *util.BufferWrapper) {
+	buf.Write(util.Faint("q: close post, m: toggle preview, Ctrl+C: quit"))
+}

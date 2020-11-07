@@ -259,3 +259,7 @@ func (m Model) ViewBreadcrumb(buf *util.BufferWrapper) {
 		buf.Write(" > %s", m.current.name)
 	}
 }
+
+func (m Model) ViewFooter(buf *util.BufferWrapper) {
+	buf.Write(util.Faint("j/k: move cursor, h/l: change directory, Ctrl+C: quit"))
+}
