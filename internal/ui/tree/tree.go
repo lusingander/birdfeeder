@@ -15,6 +15,17 @@ type node struct {
 	children []*node
 }
 
+func (n *node) postCount() int {
+	if n.post != nil {
+		return 1
+	}
+	c := 0
+	for _, child := range n.children {
+		c += child.postCount()
+	}
+	return c
+}
+
 func buildRoot(posts []*domain.Post) *node {
 	root := &node{
 		children: []*node{},
@@ -244,7 +255,7 @@ func (m Model) viewTree() string {
 		if node.post != nil {
 			buf.Writeln("%s", node.name)
 		} else {
-			buf.Writeln("%s (%d)", node.name, len(node.children))
+			buf.Writeln("%s (%d)", node.name, node.postCount())
 		}
 	}
 	return buf.String()
