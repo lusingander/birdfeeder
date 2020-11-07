@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type PostRepository interface {
 	ReadAllPosts() ([]*Post, error)
 }
@@ -11,4 +13,5 @@ type Post struct {
 	Wip        bool
 	Categories []string
 	Tags       []string
+	UpdatedAt  time.Time
 }

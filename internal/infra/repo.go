@@ -33,6 +33,7 @@ func toPost(p *postDetail) *domain.Post {
 		Wip:        p.Wip,
 		Categories: categories,
 		Tags:       p.Tags,
+		UpdatedAt:  p.UpdatedAt,
 	}
 }
 

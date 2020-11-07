@@ -2,6 +2,7 @@ package tree
 
 import (
 	"sort"
+	"time"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -24,6 +25,20 @@ func (n *node) postCount() int {
 		c += child.postCount()
 	}
 	return c
+}
+
+func (n *node) updatedAt() time.Time {
+	if n.post != nil {
+		return n.post.UpdatedAt
+	}
+	t := time.Unix(0, 0)
+	for _, child := range n.children {
+		u := child.updatedAt()
+		if u.After(t) {
+			t = u
+		}
+	}
+	return t
 }
 
 func buildRoot(posts []*domain.Post) *node {
@@ -68,10 +83,12 @@ const (
 	byNameDesc
 	byPostsCountAsc
 	byPostsCountDesc
+	byUpdatedAtAsc
+	byUpdatedAtDesc
 )
 
 func (k sortKey) next() sortKey {
-	return (k + 1) % 4
+	return (k + 1) % 6
 }
 
 func (n *node) sortNodesRecursive(key sortKey) {
@@ -85,6 +102,10 @@ func (n *node) sortNodesRecursive(key sortKey) {
 			return func(i, j int) bool { return nodes[i].postCount() < nodes[j].postCount() }
 		case byPostsCountDesc:
 			return func(i, j int) bool { return nodes[i].postCount() > nodes[j].postCount() }
+		case byUpdatedAtAsc:
+			return func(i, j int) bool { return nodes[i].updatedAt().Before(nodes[j].updatedAt()) }
+		case byUpdatedAtDesc:
+			return func(i, j int) bool { return nodes[i].updatedAt().After(nodes[j].updatedAt()) }
 		default:
 			panic("Invalid key type")
 		}
