@@ -53,6 +53,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.tree, _ = m.tree.Update(msg)
+		m.preview, _ = m.preview.Update(msg)
+		return m, nil
 	case errorMsg:
 		m.err = msg
 		return m, nil
