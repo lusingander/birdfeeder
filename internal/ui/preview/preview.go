@@ -1,11 +1,11 @@
 package preview
 
 import (
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/lusingander/birdfeeder/internal/domain"
 	"github.com/lusingander/birdfeeder/internal/ui/tree"
+	"github.com/lusingander/birdfeeder/internal/ui/viewport"
 	"github.com/lusingander/birdfeeder/internal/util"
 )
 

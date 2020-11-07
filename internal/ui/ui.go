@@ -88,20 +88,18 @@ func (m model) View() string {
 }
 
 func (m model) internalView(buf *util.BufferWrapper) {
+	m.viewHeader(buf)
 	if m.err != nil {
 		buf.Writeln(m.err.Error())
 		return
 	}
 	switch m.currentState {
 	case stateTree:
-		m.viewHeader(buf)
 		buf.Write(m.tree.View())
-		m.viewFooter(buf)
 	case statePreview:
-		// TODO: seems better to show header and footer,
-		// but sometimes header is not shown correctly because of word wrapping problem...
 		buf.Write(m.preview.View())
 	}
+	m.viewFooter(buf)
 }
 
 func (m model) viewHeader(buf *util.BufferWrapper) {
