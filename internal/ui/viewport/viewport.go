@@ -87,6 +87,7 @@ func (m *Model) SetContent(s string) {
 }
 
 func printableRuneWidth(s string) int {
+	cond := runewidth.Condition{EastAsianWidth: false, ZeroWidthJoiner: false}
 	var n int
 	var ansi bool
 
@@ -100,7 +101,7 @@ func printableRuneWidth(s string) int {
 				ansi = false
 			}
 		} else {
-			n += runewidth.RuneWidth(r)
+			n += cond.RuneWidth(r)
 		}
 	}
 
@@ -108,6 +109,7 @@ func printableRuneWidth(s string) int {
 }
 
 func wrap(s string, w int) string {
+	cond := runewidth.Condition{EastAsianWidth: false, ZeroWidthJoiner: false}
 	ansi := false
 	width := 0
 	out := ""
@@ -122,7 +124,7 @@ func wrap(s string, w int) string {
 			}
 			continue
 		}
-		cw := runewidth.RuneWidth(r)
+		cw := cond.RuneWidth(r)
 		if r == '\n' {
 			out += string(r)
 			width = 0
@@ -439,12 +441,42 @@ func View(m Model) string {
 	lines := m.visibleLines()
 
 	// Fill empty space with newlines
-	extraLines := ""
+	extraLines := make([]string, 0)
 	if len(lines) < m.Height {
-		extraLines = strings.Repeat("\n", m.Height-len(lines))
+		for i := 0; i < m.Height-len(lines); i++ {
+			extraLines = append(extraLines, "")
+		}
+	}
+	lines = append(lines, extraLines...)
+
+	linesWithBar := make([]string, 0, len(lines))
+	bLen := m.barLength()
+	bTop := m.barTop()
+	for i, line := range lines {
+		if bTop <= i && i < bTop+bLen {
+			w := printableRuneWidth(line)
+			n := m.Width - w - 1
+			if n > 0 {
+				line += strings.Repeat(" ", n)
+			}
+			line += "│"
+		}
+		linesWithBar = append(linesWithBar, line)
 	}
 
-	return strings.Join(lines, "\n") + extraLines
+	return strings.Join(linesWithBar, "\n")
+}
+
+func (m Model) barLength() int {
+	n := float64(m.Height) * float64(m.Height) / float64(len(m.lines))
+	return int(n)
+}
+
+func (m Model) barTop() int {
+	barMaxMove := m.Height - m.barLength()
+	offsetMax := len(m.lines) - m.Height
+	top := (float64(m.YOffset) / float64(offsetMax)) * float64(barMaxMove)
+	return int(top)
 }
 
 // ETC
