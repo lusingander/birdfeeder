@@ -15,12 +15,15 @@ type Model struct {
 
 	viewport viewport.Model
 
+	styled bool
+
 	Close bool
 }
 
 func New() Model {
 	return Model{
 		viewport: viewport.Model{},
+		styled:   true,
 	}
 }
 
@@ -34,6 +37,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "m":
+			m.styled = !m.styled
+			m.viewport.SetContent(m.viewMarkdown())
 		case "q":
 			m.Close = true
 			return m, nil
@@ -64,6 +70,10 @@ func (m Model) internalView(buf *util.BufferWrapper) {
 }
 
 func (m Model) viewMarkdown() string {
+	if !m.styled {
+		return m.post.Body
+	}
+
 	r, err := glamour.NewTermRenderer(
 		glamour.WithStandardStyle("dark"),
 		glamour.WithWordWrap(m.viewport.Width),
