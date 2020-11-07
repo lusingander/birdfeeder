@@ -91,6 +91,24 @@ func (k sortKey) next() sortKey {
 	return (k + 1) % 6
 }
 
+func (k sortKey) str() string {
+	switch k {
+	case byNameAsc:
+		return "Name ↓"
+	case byNameDesc:
+		return "Name ↑"
+	case byPostsCountAsc:
+		return "Posts ↓"
+	case byPostsCountDesc:
+		return "Posts ↑"
+	case byUpdatedAtAsc:
+		return "Updated ↓"
+	case byUpdatedAtDesc:
+		return "Updated ↑"
+	}
+	return ""
+}
+
 func (n *node) sortNodesRecursive(key sortKey) {
 	createSorter := func(nodes []*node) func(int, int) bool {
 		switch key {
@@ -264,7 +282,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m.viewport.SetContent(m.viewTree())
 	case tea.WindowSizeMsg:
 		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height - 3 // header + footer
+		m.viewport.Height = msg.Height - 4 // header + footer
 	}
 	return m, nil
 }
@@ -310,5 +328,6 @@ func (m Model) ViewBreadcrumb(buf *util.BufferWrapper) {
 }
 
 func (m Model) ViewFooter(buf *util.BufferWrapper) {
+	buf.Writeln(util.Faint("sort key: " + m.sortKey.str()))
 	buf.Write(util.Faint("j/k: move cursor, h/l: change directory, Ctrl+C: quit"))
 }
