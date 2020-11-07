@@ -119,7 +119,7 @@ func (m model) viewBreadcrumb(buf *util.BufferWrapper) {
 }
 
 func (m model) viewHorizontalSeparator(buf *util.BufferWrapper) {
-	buf.Writeln(strings.Repeat("-", m.width))
+	buf.Writeln(strings.Repeat("─", m.width))
 }
 
 func (model) viewFooter(buf *util.BufferWrapper) {
