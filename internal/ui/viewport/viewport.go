@@ -397,6 +397,12 @@ func Update(msg tea.Msg, m Model) (Model, tea.Cmd) {
 			if m.HighPerformanceRendering {
 				cmd = ViewUp(m, lines)
 			}
+
+		case "g":
+			m.GotoTop()
+
+		case "G":
+			m.GotoBottom()
 		}
 
 	case tea.MouseMsg:
