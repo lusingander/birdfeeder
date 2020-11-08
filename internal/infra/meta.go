@@ -2,6 +2,7 @@ package infra
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -44,4 +45,29 @@ func saveMetadata() error {
 	}
 
 	return nil
+}
+
+func readMetadata() (*metadata, error) {
+	cacheDir, err := getCacheDirPath()
+	if err != nil {
+		return nil, err
+	}
+	path := filepath.Join(cacheDir, metadataFile)
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	var meta metadata
+	err = json.Unmarshal(bytes, &meta)
+	if err != nil {
+		return nil, err
+	}
+
+	return &meta, nil
 }

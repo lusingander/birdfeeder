@@ -135,8 +135,9 @@ func (n *node) sortNodesRecursive(key sortKey) {
 }
 
 type Model struct {
-	posts []*domain.Post
-	root  *node
+	posts         []*domain.Post
+	root          *node
+	lastUpdateStr string
 
 	viewport viewport.Model
 
@@ -179,7 +180,10 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-type InitMsg []*domain.Post
+type InitMsg struct {
+	Posts []*domain.Post
+	Meta  *domain.Meta
+}
 type ClosePreview struct{}
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -273,8 +277,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, nil
 		}
 	case InitMsg:
-		m.root = buildRoot(msg)
+		m.root = buildRoot(msg.Posts)
 		m.current = m.root
+		m.lastUpdateStr = msg.Meta.FormattedLastUpdate()
 		m.viewport.SetContent(m.viewTree())
 	case ClosePreview:
 		h := m.goBackHistory()
@@ -328,6 +333,8 @@ func (m Model) ViewBreadcrumb(buf *util.BufferWrapper) {
 }
 
 func (m Model) ViewFooter(buf *util.BufferWrapper) {
-	buf.Writeln(util.Faint("sort key: " + m.sortKey.str()))
+	lastUpdate := "last update: " + m.lastUpdateStr
+	sortKey := "sort key: " + m.sortKey.str()
+	buf.Writeln(util.Faint("%s, %s"), lastUpdate, sortKey)
 	buf.Write(util.Faint("j/k: move cursor, h/l: change directory, Ctrl+C: quit"))
 }

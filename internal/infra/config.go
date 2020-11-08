@@ -8,7 +8,7 @@ import (
 	"github.com/lusingander/birdfeeder/internal/domain"
 )
 
-func ReadConfig() (*domain.Config, error) {
+func readConfig() (*domain.Config, error) {
 	conf, err := os.UserConfigDir()
 	if err != nil {
 		return nil, err

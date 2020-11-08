@@ -6,6 +6,16 @@ import (
 	"github.com/lusingander/birdfeeder/internal/domain"
 )
 
+func NewConfigRepository() domain.ConfigRepository {
+	return &configRepository{}
+}
+
+type configRepository struct{}
+
+func (configRepository) ReadConfig() (*domain.Config, error) {
+	return readConfig()
+}
+
 func NewPostRepository() domain.PostRepository {
 	return &postRepository{}
 }
@@ -39,4 +49,20 @@ func toPost(p *postDetail) *domain.Post {
 
 func parseCategories(category string) []string {
 	return strings.Split(category, "/")
+}
+
+func NewMetaRepository() domain.MetaRepository {
+	return &metaRepository{}
+}
+
+type metaRepository struct{}
+
+func (metaRepository) ReadMeta() (*domain.Meta, error) {
+	meta, err := readMetadata()
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Meta{
+		LastUpdate: meta.LastUpdate,
+	}, nil
 }

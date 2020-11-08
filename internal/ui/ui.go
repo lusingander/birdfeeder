@@ -35,11 +35,18 @@ func readPosts() tea.Msg {
 	if err != nil {
 		return errorMsg(err)
 	}
-	return initPostsMsg(posts)
+	meta, err := metaRepository.ReadMeta()
+	if err != nil {
+		return errorMsg(err)
+	}
+	return initMsg{posts, meta}
 }
 
 type errorMsg error
-type initPostsMsg []*domain.Post
+type initMsg struct {
+	posts []*domain.Post
+	meta  *domain.Meta
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -48,8 +55,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		}
-	case initPostsMsg:
-		return m.Update(tree.InitMsg(msg))
+	case initMsg:
+		return m.Update(tree.InitMsg{Posts: msg.posts, Meta: msg.meta})
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
